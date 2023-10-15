@@ -61,7 +61,7 @@ class jayBot extends Client {
             };
             getCommands(file);
 
-            const command = await import(commander);
+            const command = await import('../../' + commander);
 
             this.commands.set(command.data.name, command);
         }
@@ -72,7 +72,7 @@ class jayBot extends Client {
             .filter((file) => file.endsWith(".js"));
 
         for (const file of this.eventFiles) {
-            const event = await import(`${this.eventsPath}/${file}`);
+            const event = await import(`../../${this.eventsPath}/${file}`);
 
             this.events.set(event.name, event)
             this.eventNames.push(event.name)
