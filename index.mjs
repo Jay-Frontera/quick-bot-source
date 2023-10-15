@@ -111,4 +111,4 @@ class jayBot extends Client {
 
 }
 
-export default jayBot
+export { jayBot }
