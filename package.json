@@ -1,0 +1,9 @@
+{
+  "name": "quick-bot",
+  "version": "1.0.0",
+  "main": "index.mjs",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.13.0"
+  }
+}
