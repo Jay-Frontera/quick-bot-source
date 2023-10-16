@@ -81,8 +81,8 @@ class jayBot extends Client {
 
     async start() {
         this.useDefaultIntents()
-        this.useCommands()
-        this.useEvents()
+        await this.useCommands()
+        await this.useEvents()
 
         this.on('interactionCreate', interaction => {
             if (interaction.isCommand()) {
@@ -90,6 +90,8 @@ class jayBot extends Client {
                 return this.commands.get(interaction.commandName)?.run(interaction, this)
             }
         })
+
+        console.log(this.events)
 
         for (const event of this.eventNames) {
             this.on(event, (data) => { this.events.get(event).execute(data, this) })
@@ -99,8 +101,6 @@ class jayBot extends Client {
 
         try {
             await this.login(this.token)
-
-            await this.application.commands.set(this.commands.map(command => command.data))
 
             const pkg = await import('./package.json', { assert: { type: "json" } })
             const top = `\x1b[34m┏╋◆ ${pkg.default.name.toUpperCase()} ◆╋┓\n\n\x1b[31m┏╋━━━━━━◥◣◆◢◤━━━━━━━╋┓`
