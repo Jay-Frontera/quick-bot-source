@@ -87,7 +87,7 @@ class jayBot extends Client {
         this.on('interactionCreate', interaction => {
             if (interaction.isCommand()) {
                 if (!interaction.member.permissions.has("Administrator")) return
-                return this.commands.get(interaction.commandName)?.run(interaction, client)
+                return this.commands.get(interaction.commandName)?.run(interaction, this)
             }
         })
 
@@ -99,6 +99,8 @@ class jayBot extends Client {
 
         try {
             await this.login(this.token)
+
+            await this.application.commands.set(this.commands.map(command => command.data))
 
             const pkg = await import('./package.json', { assert: { type: "json" } })
             const top = `\x1b[34m┏╋◆ ${pkg.default.name.toUpperCase()} ◆╋┓\n\n\x1b[31m┏╋━━━━━━◥◣◆◢◤━━━━━━━╋┓`
