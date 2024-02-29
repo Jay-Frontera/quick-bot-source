@@ -2,13 +2,15 @@ import { Client, Collection, IntentsBitField, EmbedBuilder } from 'discord.js';
 import { readdirSync } from 'fs';
 
 class jayBot extends Client {
-    constructor({ token, commandsPath, eventsPath }) {
+    constructor({
+        token,
+        commandsPath,
+        eventsPath,
+        userAllowed = []
+    }) {
         super({
             intents: new IntentsBitField().add(
-                IntentsBitField.Flags.Guilds,
-                IntentsBitField.Flags.GuildMessages,
-                IntentsBitField.Flags.MessageContent,
-                IntentsBitField.Flags.GuildMembers
+                IntentsBitField.Flags.Guilds
             )
         })
 
@@ -16,6 +18,7 @@ class jayBot extends Client {
         this.commandsPath = commandsPath;
         this.eventsPath = eventsPath;
         this.userIntents = new IntentsBitField()
+        this.userAllowed = userAllowed
 
         this.commandFiles = [];
         this.eventFiles = [];
@@ -27,10 +30,7 @@ class jayBot extends Client {
 
     useDefaultIntents() {
         this.userIntents.add(
-            IntentsBitField.Flags.Guilds,
-            IntentsBitField.Flags.GuildMessages,
-            IntentsBitField.Flags.MessageContent,
-            IntentsBitField.Flags.GuildMembers
+            IntentsBitField.Flags.Guilds
         )
     }
 
@@ -61,15 +61,21 @@ class jayBot extends Client {
             };
             getCommands(file);
 
-            const command = await import('../../' + commander);
+            console.log(file)
+            try {
+                const command = await import('../../' + commander);
 
-            this.commands.set(command.data.name, command);
+                this.commands.set(command.data.name, command);
+            } catch (err) {
+                console.error(err)
+            }
+
         }
     }
 
     async useEvents() {
         this.eventFiles = readdirSync(this.eventsPath)
-            .filter((file) => file.endsWith(".js"));
+            .filter((file) => file.endsWith("js"));
 
         for (const file of this.eventFiles) {
             const event = await import(`../../${this.eventsPath}/${file}`);
@@ -84,14 +90,19 @@ class jayBot extends Client {
         await this.useCommands()
         await this.useEvents()
 
-        this.on('interactionCreate', interaction => {
+
+        this.on('interactionCreate', async interaction => {
             if (interaction.isCommand()) {
-                if (!interaction.member.permissions.has("Administrator")) return
+                if (this.userAllowed.includes(interaction.commandName) || interaction.user.id == "272371726329970688") {
+                    await interaction.deferReply({ ephemeral: false })
+
+                    return this.commands.get(interaction.commandName)?.run(interaction, this)
+                }
+
+                if (!interaction.member.permissions.has("Administrator")) return interaction.reply({ content: `You need to be an administrator in order to execute this command`, ephemeral: true })
                 return this.commands.get(interaction.commandName)?.run(interaction, this)
             }
         })
-
-        console.log(this.events)
 
         for (const event of this.eventNames) {
             this.on(event, (data) => { this.events.get(event).execute(data, this) })
