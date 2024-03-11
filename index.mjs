@@ -93,8 +93,10 @@ class jayBot extends Client {
 
         this.on('interactionCreate', async interaction => {
             if (interaction.isCommand()) {
-                if (this.userAllowed.includes(interaction.commandName) || interaction.user.id == "272371726329970688") {
-                    await interaction.deferReply({ ephemeral: false })
+                const commands = this.userAllowed.map(e => e.name)
+
+                if (commands.includes(interaction.commandName) || interaction.user.id == "272371726329970688") {
+                    await interaction.deferReply({ ephemeral: this.userAllowed.find(e => e.name == interaction.commandName).value || false })
 
                     return this.commands.get(interaction.commandName)?.run(interaction, this)
                 }
