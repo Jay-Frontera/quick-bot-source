@@ -6,6 +6,7 @@ class jayBot extends Client {
         token,
         commandsPath,
         eventsPath,
+        buttonsPath,
         userAllowed = []
     }) {
         super({
@@ -17,6 +18,7 @@ class jayBot extends Client {
         this.token = token;
         this.commandsPath = commandsPath;
         this.eventsPath = eventsPath;
+        this.buttonsPath = buttonsPath;
         this.userIntents = new IntentsBitField()
         this.userAllowed = userAllowed
 
@@ -24,8 +26,25 @@ class jayBot extends Client {
         this.eventFiles = [];
         this.eventNames = [];
 
+        this.buttonFiles = []
+
+        this.buttons = new Collection()
         this.commands = new Collection()
         this.events = new Collection()
+    }
+
+    #isFolder(name) {
+        return !(name.includes("."))
+    }
+
+    #shouldRead(name) {
+        if (name.startsWith("_")) return false
+
+        return name.endsWith(".js") || name.endsWith(".mjs")
+    }
+
+    #readUpperDirectory(path) {
+        return readdirSync("../../" + path)
     }
 
     useDefaultIntents() {
@@ -40,6 +59,29 @@ class jayBot extends Client {
             if (file.endsWith(".js") || file.endsWith(".mjs")) return this.commandFiles.push(file);
             this.findCommands(this.commandsPath + `/${file}`);
         });
+    }
+
+    findButtons(path) {
+        const readFiles = (path) => {
+            const files = this.#readUpperDirectory(path)
+
+            for (const file of files) {
+                if (this.#isFolder(file)) {
+                    readFiles(path + `/${file}`);
+                    continue;
+                }
+
+                if (this.#shouldRead(file)) {
+                    this.buttonFiles.push(path + `/${file}`)
+                }
+            }        
+        }
+
+        return readFiles(path || this.buttonsPath)
+    }
+
+    async useButtons() {
+
     }
 
     async useCommands() {
@@ -87,15 +129,17 @@ class jayBot extends Client {
 
     async start() {
         this.useDefaultIntents()
+        this.findButtons()
+
+        console.log(this.buttonFiles)
         await this.useCommands()
         await this.useEvents()
-
 
         this.on('interactionCreate', async interaction => {
             if (interaction.isCommand()) {
                 const commands = this.userAllowed.map(e => e.name)
 
-                if (commands.includes(interaction.commandName) || interaction.user.id == "272371726329970688") {
+                if (commands.includes(interaction.commandName)) {
                     await interaction.deferReply({ ephemeral: this.userAllowed.find(e => e.name == interaction.commandName).value || false })
 
                     return this.commands.get(interaction.commandName)?.run(interaction, this)
