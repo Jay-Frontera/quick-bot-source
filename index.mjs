@@ -161,7 +161,16 @@ class jayBot extends Client {
                 return this.commands.get(interaction.commandName)?.run(interaction, this)
             }
 
-            return this.buttons.get(interaction.customId)?.run(interaction, this)
+            const btn = this.buttons.get(interaction.customId)
+
+            if (!btn) return interaction.reply({ content: `This button is not registered in the bot`, ephemeral: true })
+
+            if (btn.onlyAdmin && !interaction.member.permissions.has("Administrator")) return interaction.reply({ content: `You need to be an administrator in order to execute this button`, ephemeral: true })
+
+            if (btn.deferReply) await interaction.deferReply({ ephemeral: btn.ephemeral })
+            if (btn.deferUpdate) await interaction.deferUpdate({ ephemeral: btn.ephemeral })
+
+            return btn?.run(interaction, this)
         })
 
         for (const event of this.eventNames) {
