@@ -173,10 +173,8 @@ class jayBot extends Client {
         try {
             await this.login(this.token)
 
-            console.log(readFileSync('./package.json'))
-
             const pkg = await JSON.parse(Buffer.from(readFileSync('./package.json')).toString('binary', 'utf-8'))
-            const top = `\x1b[34m┏╋◆ ${pkg.default.name.toUpperCase()} ◆╋┓\n\n\x1b[31m┏╋━━━━━━◥◣◆◢◤━━━━━━━╋┓`
+            const top = `\x1b[34m┏╋◆ ${pkg.name.toUpperCase()} ◆╋┓\n\n\x1b[31m┏╋━━━━━━◥◣◆◢◤━━━━━━━╋┓`
 
             console.log('\n' + top + "\n\n\x1b[32m[!] Bot Status: ONLINE")
             console.log(`[!] Loaded ${this.commands.size} commands, ${this.events.size} events and ${this.buttons.size} buttons.`)
