@@ -1,5 +1,5 @@
 import { Client, Collection, IntentsBitField, EmbedBuilder } from 'discord.js';
-import { readdirSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 
 class jayBot extends Client {
     constructor({
@@ -147,8 +147,6 @@ class jayBot extends Client {
         await this.useCommands()
         await this.useEvents()
 
-        console.log(`[!] Loaded ${this.commands.size} commands, ${this.events.size} events and ${this.buttons.size} buttons.`)
-
         this.on('interactionCreate', async interaction => {
             if (interaction.isCommand()) {
                 const commands = this.userAllowed.map(e => e.name)
@@ -175,10 +173,11 @@ class jayBot extends Client {
         try {
             await this.login(this.token)
 
-            const pkg = await import('./package.json', { assert: { type: "json" } })
+            const pkg = await JSON.parse(Buffer.from(readFileSync('./package.json')).toString())
             const top = `\x1b[34m┏╋◆ ${pkg.default.name.toUpperCase()} ◆╋┓\n\n\x1b[31m┏╋━━━━━━◥◣◆◢◤━━━━━━━╋┓`
 
             console.log('\n' + top + "\n\n\x1b[32m[!] Bot Status: ONLINE")
+            console.log(`[!] Loaded ${this.commands.size} commands, ${this.events.size} events and ${this.buttons.size} buttons.`)
         } catch (err) {
             console.error("\x1b[31mBot login err: " + err);
         }
