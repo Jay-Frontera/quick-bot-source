@@ -161,7 +161,7 @@ class jayBot extends Client {
                 return this.commands.get(interaction.commandName)?.run(interaction, this)
             }
 
-            return this.buttons.get(interaction.commandName)?.run(interaction, this)
+            return this.buttons.get(interaction.customId)?.run(interaction, this)
         })
 
         for (const event of this.eventNames) {
