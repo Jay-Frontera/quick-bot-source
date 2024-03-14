@@ -44,7 +44,7 @@ class jayBot extends Client {
     }
 
     #readUpperDirectory(path) {
-        return readdirSync("../../" + path)
+        return readdirSync(path)
     }
 
     useDefaultIntents() {
@@ -74,14 +74,26 @@ class jayBot extends Client {
                 if (this.#shouldRead(file)) {
                     this.buttonFiles.push(path + `/${file}`)
                 }
-            }        
+            }
         }
 
         return readFiles(path || this.buttonsPath)
     }
 
     async useButtons() {
+        for (const file of this.buttonFiles) {
+            try {
+                const command = await import('../../' + file);
 
+                const splitted = file.split("/")
+
+                const name = splitted[splitted.length - 1].split(".")[0]
+
+                this.buttons.set(name, command);
+            } catch (err) {
+                console.error(err)
+            }
+        }
     }
 
     async useCommands() {
@@ -131,9 +143,11 @@ class jayBot extends Client {
         this.useDefaultIntents()
         this.findButtons()
 
-        console.log(this.buttonFiles)
+        await this.useButtons()
         await this.useCommands()
         await this.useEvents()
+
+        console.log(`[!] Loaded ${this.commands.size} commands, ${this.events.size} events and ${this.buttons.size} buttons.`)
 
         this.on('interactionCreate', async interaction => {
             if (interaction.isCommand()) {
@@ -148,6 +162,8 @@ class jayBot extends Client {
                 if (!interaction.member.permissions.has("Administrator")) return interaction.reply({ content: `You need to be an administrator in order to execute this command`, ephemeral: true })
                 return this.commands.get(interaction.commandName)?.run(interaction, this)
             }
+
+            return this.buttons.get(interaction.commandName)?.run(interaction, this)
         })
 
         for (const event of this.eventNames) {
