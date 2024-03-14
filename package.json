@@ -1,6 +1,6 @@
 {
   "name": "jay-quick-bot",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "main": "index.mjs",
   "license": "MIT",
   "dependencies": {
